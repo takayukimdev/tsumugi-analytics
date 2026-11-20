@@ -1,0 +1,23 @@
+# Dummy profile for offline `dbt parse` in CI and `make test` (target: ci never connects),
+# plus `ci_bq` for `make test-bq` against an expiring `ci_<sha>` dataset on BigQuery.
+tsumugi:
+  target: ci
+  outputs:
+    ci:
+      type: bigquery
+      method: oauth
+      project: ci-dummy-project
+      dataset: ci_offline
+      location: asia-northeast1
+      threads: 4
+      maximum_bytes_billed: 1000000000
+      job_execution_timeout_seconds: 300
+    ci_bq:
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('GCP_PROJECT_ID', 'ci-dummy-project') }}"
+      dataset: "{{ env_var('DBT_CI_DATASET', 'ci_offline') }}"
+      location: asia-northeast1
+      threads: 4
+      maximum_bytes_billed: 1000000000
+      job_execution_timeout_seconds: 300

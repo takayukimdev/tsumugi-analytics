@@ -1,0 +1,68 @@
+{
+  "date": "2026-11-18",
+  "days": 10,
+  "redactor": "dlp",
+  "loaded_at": "2026-11-20T01:37:47.278Z",
+  "streams": {
+    "app_events": {
+      "lines_read": 39746,
+      "clean": 39746,
+      "content_rows": 0,
+      "dead_letters": 0,
+      "zdr_stripped": 0,
+      "cells_redacted": 0,
+      "error_codes": {}
+    },
+    "inference_requests": {
+      "lines_read": 59433,
+      "clean": 59433,
+      "content_rows": 45494,
+      "dead_letters": 0,
+      "zdr_stripped": 13939,
+      "cells_redacted": 89935,
+      "error_codes": {}
+    }
+  },
+  "bq_loaded_rows": {
+    "app_events": 39746,
+    "inference_requests": 59433,
+    "raw_content": 45494
+  },
+  "redaction_recall": {
+    "email_address": {
+      "labeled": 802,
+      "zdr_removed": 211,
+      "dead_lettered": 0,
+      "leaked": 0,
+      "recall": 1.0
+    },
+    "person_name": {
+      "labeled": 783,
+      "zdr_removed": 201,
+      "dead_lettered": 0,
+      "leaked": 0,
+      "recall": 1.0
+    },
+    "phone_number": {
+      "labeled": 760,
+      "zdr_removed": 186,
+      "dead_lettered": 0,
+      "leaked": 0,
+      "recall": 1.0
+    },
+    "postal_code": {
+      "labeled": 764,
+      "zdr_removed": 189,
+      "dead_lettered": 0,
+      "leaked": 0,
+      "recall": 1.0
+    },
+    "street_address": {
+      "labeled": 638,
+      "zdr_removed": 155,
+      "dead_lettered": 0,
+      "leaked": 103,
+      "recall": 0.7867494824016563
+    }
+  }
+}

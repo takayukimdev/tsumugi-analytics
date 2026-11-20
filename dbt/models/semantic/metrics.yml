@@ -1,0 +1,123 @@
+# Metric tree (see docs/metrics.md)
+#   North star: weekly_active_orgs
+#   Guardrails: cost_per_active_user, error_rate, p95_latency_ms
+#   Supporting: requests, total_cost_usd, active_users, tokens, thumbs_up_rate, d7_retention
+
+metrics:
+  - name: weekly_active_orgs
+    label: Weekly active orgs
+    description: >
+      NORTH STAR. Distinct orgs with at least one inference request. Query with
+      metric_time__week (ISO weeks start Monday) for the weekly value.
+    type: simple
+    type_params:
+      measure: active_org_count
+
+  - name: active_users
+    label: Active users
+    description: Distinct pseudonymous users with at least one inference request in the period.
+    type: simple
+    type_params:
+      measure: active_user_count
+
+  - name: requests
+    label: Inference requests
+    description: Number of inference requests (chat app + developer API).
+    type: simple
+    type_params:
+      measure: request_count
+
+  - name: total_cost_usd
+    label: Inference cost (USD)
+    description: Inference cost at list price. Failed requests cost 0.
+    type: simple
+    type_params:
+      measure: cost_usd
+
+  - name: output_tokens
+    label: Output tokens
+    type: simple
+    type_params:
+      measure: output_tokens
+
+  - name: input_tokens
+    label: Input tokens
+    type: simple
+    type_params:
+      measure: input_tokens
+
+  - name: cost_per_active_user
+    label: Cost per active user (USD)
+    description: >
+      GUARDRAIL. total_cost_usd / active_users for the same period and slice. Compare periods
+      of equal length only.
+    type: ratio
+    type_params:
+      numerator: total_cost_usd
+      denominator: active_users
+
+  - name: error_rate
+    label: Error rate
+    description: GUARDRAIL. Share of inference requests with status = error (0 to 1).
+    type: ratio
+    type_params:
+      # Separate numerator metric on purpose: a filtered `requests` numerator over a `requests`
+      # denominator compiles to two columns both named `requests` (always 1.0).
+      numerator: error_requests
+      denominator: requests
+
+  - name: p95_latency_ms
+    label: p95 latency (ms)
+    description: GUARDRAIL. Approximate 95th percentile end-to-end latency in milliseconds.
+    type: simple
+    type_params:
+      measure: latency_p95_ms
+
+  - name: thumbs_up_rate
+    label: Thumbs-up rate
+    description: Share of rated messages that were rated up (0 to 1). Unrated messages excluded.
+    type: ratio
+    type_params:
+      numerator: thumbs_up_count
+      denominator: rated_message_count
+
+  - name: d7_retention
+    label: D7 retention
+    description: >
+      Share of eligible new users who made at least one request exactly 7 days after their
+      first request. Slice by cohort (metric_time = cohort date).
+    type: ratio
+    type_params:
+      numerator: d7_retained_users
+      denominator: d7_eligible_users
+
+  # Building blocks for the ratio metrics above (ratios must reference metrics).
+  - name: error_requests
+    label: Failed requests
+    type: simple
+    type_params:
+      measure: error_request_count
+
+  - name: thumbs_up_count
+    label: Thumbs-up ratings
+    type: simple
+    type_params:
+      measure: thumbs_up_count
+
+  - name: rated_message_count
+    label: Rated messages
+    type: simple
+    type_params:
+      measure: rated_message_count
+
+  - name: d7_retained_users
+    label: D7 retained users
+    type: simple
+    type_params:
+      measure: d7_retained_users
+
+  - name: d7_eligible_users
+    label: D7 eligible users
+    type: simple
+    type_params:
+      measure: d7_eligible_users

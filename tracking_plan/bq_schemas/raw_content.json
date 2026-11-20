@@ -1,0 +1,30 @@
+[
+  {
+    "name": "request_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "UUIDv4; idempotency key"
+  },
+  {
+    "name": "event_ts",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "Request start"
+  },
+  {
+    "name": "prompt_text",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "response_text",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "_loaded_at",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "UTC timestamp when the ingest job processed the batch"
+  }
+]

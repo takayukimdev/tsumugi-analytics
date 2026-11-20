@@ -1,0 +1,4 @@
+model,valid_from,valid_to,input_usd_per_mtok,cached_input_usd_per_mtok,output_usd_per_mtok
+tsumugi-mini,2025-01-01 00:00:00 UTC,2026-11-01 00:00:00 UTC,0.40,0.10,1.60
+tsumugi-mini,2026-11-01 00:00:00 UTC,,0.30,0.075,1.20
+tsumugi-pro,2025-01-01 00:00:00 UTC,,3.00,0.75,12.00

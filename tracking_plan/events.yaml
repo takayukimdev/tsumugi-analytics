@@ -1,0 +1,100 @@
+# Tsumugi tracking plan: the single source of truth for event and log schemas.
+#
+# JSON Schemas in tracking_plan/schemas/ and BigQuery raw schemas in
+# tracking_plan/bq_schemas/ are GENERATED from this file (`make schemas`).
+# CI fails if they drift. To add or change an event:
+#   1. edit this file  2. `make schemas`  3. update the generator  4. update dbt staging
+#
+# Property fields:
+#   type      string | integer | number | boolean | timestamp (RFC 3339, UTC) | date
+#   required  true -> must be present and non-null
+#   pii       none        safe to store as-is
+#             identifier  pseudonymized with keyed HMAC at ingest
+#             free_text   may contain PII: dropped for ZDR orgs, DLP-redacted otherwise
+#   enum      optional list of allowed values
+
+version: 1
+
+sources:
+  app:
+    description: Product events emitted by the Tsumugi chat app (Segment-style track calls).
+    stream: app_events
+    # Envelope shared by every app event. Event-specific fields live under `properties`.
+    common:
+      event_id: {type: string, required: true, pii: none, description: "UUIDv4; idempotency key"}
+      event_name: {type: string, required: true, pii: none, description: "object_action, snake_case"}
+      event_ts: {type: timestamp, required: true, pii: none, description: "When it happened (client clock)"}
+      received_ts: {type: timestamp, required: true, pii: none, description: "When the collector received it"}
+      org_id: {type: string, required: true, pii: identifier, description: "Customer organization"}
+      user_id: {type: string, required: true, pii: identifier, description: "Acting user"}
+      session_id: {type: string, required: false, pii: none, description: "Null for server-side events"}
+      platform: {type: string, required: true, pii: none, enum: [web, ios, android, server]}
+      app_version: {type: string, required: true, pii: none}
+      schema_version: {type: integer, required: true, pii: none}
+    events:
+      session_started:
+        trigger: User opens the app or returns after 30 minutes of inactivity.
+        owner: product
+        purpose: Engagement (DAU/WAU), session counts.
+        properties: {}
+      conversation_created:
+        trigger: User starts a new conversation thread.
+        owner: product
+        purpose: Conversations per user; activation.
+        properties:
+          conversation_id: {type: string, required: true, pii: none}
+      message_sent:
+        trigger: User submits a prompt. The prompt text itself is only in the inference log.
+        owner: product
+        purpose: Usage depth; joins to the inference request it triggered.
+        properties:
+          conversation_id: {type: string, required: true, pii: none}
+          message_id: {type: string, required: true, pii: none}
+          request_id: {type: string, required: true, pii: none, description: "Inference request triggered"}
+          prompt_chars: {type: integer, required: true, pii: none}
+          has_attachment: {type: boolean, required: true, pii: none}
+      feedback_submitted:
+        trigger: User rates a model response (thumbs up/down).
+        owner: product
+        purpose: Response quality by model; guardrail metric.
+        properties:
+          message_id: {type: string, required: true, pii: none}
+          request_id: {type: string, required: true, pii: none}
+          rating: {type: string, required: true, pii: none, enum: [up, down]}
+          reason: {type: string, required: false, pii: none, enum: [inaccurate, unhelpful, too_slow, unsafe, other]}
+      org_changed:
+        trigger: An org is created, changes plan, or toggles Zero Data Retention (server-side).
+        owner: billing
+        purpose: Source for SCD2 dim_orgs; plan and ZDR state at any point in time.
+        properties:
+          change_type: {type: string, required: true, pii: none, enum: [created, plan_changed, zdr_changed]}
+          plan: {type: string, required: true, pii: none, enum: [free, pro, enterprise]}
+          zdr: {type: boolean, required: true, pii: none, description: "Zero Data Retention enabled"}
+          changed_at: {type: timestamp, required: true, pii: none}
+
+  api:
+    description: One record per model inference, from both the chat app and the developer API.
+    stream: inference_requests
+    fields:
+      request_id: {type: string, required: true, pii: none, description: "UUIDv4; idempotency key"}
+      event_ts: {type: timestamp, required: true, pii: none, description: "Request start"}
+      received_ts: {type: timestamp, required: true, pii: none, description: "When the log was received"}
+      org_id: {type: string, required: true, pii: identifier}
+      user_id: {type: string, required: true, pii: identifier, description: "End user, or API key owner"}
+      api_key_id: {type: string, required: false, pii: identifier, description: "Null for chat app traffic"}
+      channel: {type: string, required: true, pii: none, enum: [app, api]}
+      conversation_id: {type: string, required: false, pii: none}
+      message_id: {type: string, required: false, pii: none}
+      model: {type: string, required: true, pii: none, enum: [tsumugi-mini, tsumugi-pro]}
+      input_tokens: {type: integer, required: true, pii: none}
+      output_tokens: {type: integer, required: true, pii: none}
+      cached_tokens: {type: integer, required: true, pii: none, description: "Subset of input_tokens"}
+      latency_ms: {type: integer, required: true, pii: none, description: "Request start to last token"}
+      ttft_ms: {type: integer, required: false, pii: none, description: "Time to first token; null on error"}
+      status: {type: string, required: true, pii: none, enum: [success, error, cancelled]}
+      error_code: {type: string, required: false, pii: none, enum: [rate_limited, context_length_exceeded, internal_error, timeout]}
+      finish_reason: {type: string, required: false, pii: none, enum: [stop, length, content_filter]}
+      zdr: {type: boolean, required: true, pii: none, description: "Org's ZDR setting at request time"}
+      prompt_text: {type: string, required: false, pii: free_text}
+      response_text: {type: string, required: false, pii: free_text}
+      schema_version: {type: integer, required: true, pii: none}

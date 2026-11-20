@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tsumugi/app/org_changed",
+  "title": "org_changed",
+  "description": "An org is created, changes plan, or toggles Zero Data Retention (server-side).",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "UUIDv4; idempotency key",
+      "x-pii": "none"
+    },
+    "event_name": {
+      "type": "string",
+      "description": "object_action, snake_case",
+      "x-pii": "none",
+      "const": "org_changed"
+    },
+    "event_ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When it happened (client clock)",
+      "x-pii": "none"
+    },
+    "received_ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the collector received it",
+      "x-pii": "none"
+    },
+    "org_id": {
+      "type": "string",
+      "description": "Customer organization",
+      "x-pii": "identifier"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Acting user",
+      "x-pii": "identifier"
+    },
+    "session_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Null for server-side events",
+      "x-pii": "none"
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "web",
+        "ios",
+        "android",
+        "server"
+      ],
+      "x-pii": "none"
+    },
+    "app_version": {
+      "type": "string",
+      "x-pii": "none"
+    },
+    "schema_version": {
+      "type": "integer",
+      "x-pii": "none"
+    },
+    "properties": {
+      "type": "object",
+      "properties": {
+        "change_type": {
+          "type": "string",
+          "enum": [
+            "created",
+            "plan_changed",
+            "zdr_changed"
+          ],
+          "x-pii": "none"
+        },
+        "plan": {
+          "type": "string",
+          "enum": [
+            "free",
+            "pro",
+            "enterprise"
+          ],
+          "x-pii": "none"
+        },
+        "zdr": {
+          "type": "boolean",
+          "description": "Zero Data Retention enabled",
+          "x-pii": "none"
+        },
+        "changed_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-pii": "none"
+        }
+      },
+      "required": [
+        "change_type",
+        "plan",
+        "zdr",
+        "changed_at"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "event_id",
+    "event_name",
+    "event_ts",
+    "received_ts",
+    "org_id",
+    "user_id",
+    "session_id",
+    "platform",
+    "app_version",
+    "schema_version",
+    "properties"
+  ],
+  "additionalProperties": false
+}

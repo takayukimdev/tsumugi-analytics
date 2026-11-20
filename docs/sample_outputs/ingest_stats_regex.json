@@ -1,0 +1,60 @@
+{
+  "redactor": "regex",
+  "streams": {
+    "app_events": {
+      "lines_read": 123323,
+      "clean": 123323,
+      "content_rows": 0,
+      "dead_letters": 0,
+      "zdr_stripped": 0,
+      "cells_redacted": 0,
+      "error_codes": {}
+    },
+    "inference_requests": {
+      "lines_read": 161926,
+      "clean": 161926,
+      "content_rows": 118736,
+      "dead_letters": 0,
+      "zdr_stripped": 43190,
+      "cells_redacted": 234489,
+      "error_codes": {}
+    }
+  },
+  "redaction_recall": {
+    "email_address": {
+      "labeled": 2208,
+      "zdr_removed": 574,
+      "dead_lettered": 0,
+      "leaked": 0,
+      "recall": 1.0
+    },
+    "person_name": {
+      "labeled": 2159,
+      "zdr_removed": 577,
+      "dead_lettered": 0,
+      "leaked": 1582,
+      "recall": 0.0
+    },
+    "phone_number": {
+      "labeled": 2150,
+      "zdr_removed": 610,
+      "dead_lettered": 0,
+      "leaked": 0,
+      "recall": 1.0
+    },
+    "postal_code": {
+      "labeled": 2121,
+      "zdr_removed": 550,
+      "dead_lettered": 0,
+      "leaked": 0,
+      "recall": 1.0
+    },
+    "street_address": {
+      "labeled": 1790,
+      "zdr_removed": 460,
+      "dead_lettered": 0,
+      "leaked": 0,
+      "recall": 1.0
+    }
+  }
+}

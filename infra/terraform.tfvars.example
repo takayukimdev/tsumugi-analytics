@@ -1,0 +1,13 @@
+# Copy to infra/terraform.tfvars (gitignored via *.tfvars if added, or pass -var-file).
+project_id = "your-gcp-project-id"
+region     = "asia-northeast1"
+image_tag  = "latest"
+
+# Numeric repository ID (`gh api repos/<owner>/<repo> --jq .id`): survives repo renames.
+github_repository_id = "000000000"
+
+# Keep false except during live Composer 3 runs; destroy immediately afterward.
+enable_composer = false
+
+# Optional: principals allowed to view unmasked redacted text in raw.raw_content.
+fine_grained_readers = []

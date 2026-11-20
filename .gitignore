@@ -1,0 +1,42 @@
+# Secrets and credentials: never commit
+.env
+*.pem
+*credentials*.json
+*service-account*.json
+*-sa-key*.json
+profiles.yml
+!ci/profiles.yml
+
+# Personal agent instructions (local only)
+CLAUDE.local.md
+
+# Generated data (synthetic, reproducible from seed)
+data/
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+*.tfvars.json
+crash.log
+
+# dbt
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+dbt/.user.yml
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

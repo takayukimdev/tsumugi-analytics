@@ -1,0 +1,117 @@
+[
+  {
+    "name": "request_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "UUIDv4; idempotency key"
+  },
+  {
+    "name": "event_ts",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "Request start"
+  },
+  {
+    "name": "received_ts",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "When the log was received"
+  },
+  {
+    "name": "org_id",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "user_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "End user, or API key owner"
+  },
+  {
+    "name": "api_key_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Null for chat app traffic"
+  },
+  {
+    "name": "channel",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "conversation_id",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "message_id",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "model",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "input_tokens",
+    "type": "INTEGER",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "output_tokens",
+    "type": "INTEGER",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "cached_tokens",
+    "type": "INTEGER",
+    "mode": "REQUIRED",
+    "description": "Subset of input_tokens"
+  },
+  {
+    "name": "latency_ms",
+    "type": "INTEGER",
+    "mode": "REQUIRED",
+    "description": "Request start to last token"
+  },
+  {
+    "name": "ttft_ms",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Time to first token; null on error"
+  },
+  {
+    "name": "status",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "error_code",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "finish_reason",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "zdr",
+    "type": "BOOLEAN",
+    "mode": "REQUIRED",
+    "description": "Org's ZDR setting at request time"
+  },
+  {
+    "name": "schema_version",
+    "type": "INTEGER",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "_loaded_at",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "UTC timestamp when the ingest job processed the batch"
+  }
+]

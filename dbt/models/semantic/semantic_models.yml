@@ -1,0 +1,136 @@
+# Semantic models: the governed layer that LLM agents and dashboards query by metric name,
+# never by raw SQL. Descriptions are written for an LLM reader: say what a number means,
+# what it excludes, and which dimension to slice by.
+
+semantic_models:
+  - name: inference_requests
+    description: >
+      Every model inference from the Tsumugi chat app and developer API, one row per request.
+      Use for usage, token, cost, latency, and error questions.
+    model: ref('fct_inference_requests')
+    defaults:
+      agg_time_dimension: event_date
+    entities:
+      - name: request
+        type: primary
+        expr: request_id
+      - name: user
+        type: foreign
+        expr: user_id
+      - name: org
+        type: foreign
+        expr: org_id
+    dimensions:
+      - name: event_date
+        type: time
+        description: JST calendar date of the request. Partition column of the fact table.
+        type_params:
+          time_granularity: day
+      - name: model
+        type: categorical
+        description: tsumugi-mini or tsumugi-pro.
+      - name: channel
+        type: categorical
+        description: app (chat UI) or api (developer API).
+      - name: org_plan
+        type: categorical
+        description: The org's plan (free, pro, enterprise) at the time of the request.
+      - name: status
+        type: categorical
+        description: success, error, or cancelled.
+      - name: is_zdr
+        type: categorical
+        description: Whether the org had Zero Data Retention on at request time.
+    measures:
+      - name: request_count
+        description: Number of inference requests.
+        agg: count
+        expr: request_id
+      - name: error_request_count
+        description: Requests that failed (status = error).
+        agg: sum
+        expr: case when status = 'error' then 1 else 0 end
+      - name: input_tokens
+        agg: sum
+      - name: output_tokens
+        agg: sum
+      - name: cached_tokens
+        agg: sum
+      - name: cost_usd
+        description: Inference cost in USD at list price; failed requests cost 0.
+        agg: sum
+      - name: active_user_count
+        description: Distinct pseudonymous users with at least one request.
+        agg: count_distinct
+        expr: user_id
+      - name: active_org_count
+        description: Distinct orgs with at least one request.
+        agg: count_distinct
+        expr: org_id
+      - name: latency_p95_ms
+        description: 95th percentile end-to-end latency in milliseconds (approximate).
+        agg: percentile
+        expr: latency_ms
+        agg_params:
+          percentile: 0.95
+          use_approximate_percentile: true
+
+  - name: messages
+    description: >
+      User messages in the chat app with their feedback rating. Use for engagement and
+      response-quality questions.
+    model: ref('fct_messages')
+    defaults:
+      agg_time_dimension: event_date
+    entities:
+      - name: message
+        type: primary
+        expr: message_id
+      - name: user
+        type: foreign
+        expr: user_id
+    dimensions:
+      - name: event_date
+        type: time
+        description: JST calendar date the message was sent.
+        type_params:
+          time_granularity: day
+      - name: platform
+        type: categorical
+        description: web, ios, or android.
+    measures:
+      - name: message_count
+        agg: count
+        expr: message_id
+      - name: rated_message_count
+        description: Messages that received a thumbs up or down.
+        agg: sum
+        expr: case when rating is not null then 1 else 0 end
+      - name: thumbs_up_count
+        agg: sum
+        expr: case when rating = 'up' then 1 else 0 end
+
+  - name: user_retention
+    description: >
+      One row per user cohort (first inference date). Use only for D7 retention; eligibility
+      already excludes cohorts younger than 7 days and the left-censored first day.
+    model: ref('fct_user_retention')
+    defaults:
+      agg_time_dimension: cohort_date
+    entities:
+      - name: user
+        type: primary
+        expr: user_id
+    dimensions:
+      - name: cohort_date
+        type: time
+        description: The user's first inference date (JST).
+        type_params:
+          time_granularity: day
+    measures:
+      - name: d7_eligible_users
+        agg: sum
+        expr: case when is_d7_eligible then 1 else 0 end
+      - name: d7_retained_users
+        agg: sum
+        expr: case when is_d7_eligible and is_retained_d7 then 1 else 0 end

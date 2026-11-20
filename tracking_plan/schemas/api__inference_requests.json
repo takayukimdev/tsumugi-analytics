@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tsumugi/api/inference_requests",
+  "title": "inference_requests",
+  "description": "One record per model inference, from both the chat app and the developer API.",
+  "type": "object",
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "description": "UUIDv4; idempotency key",
+      "x-pii": "none"
+    },
+    "event_ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Request start",
+      "x-pii": "none"
+    },
+    "received_ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the log was received",
+      "x-pii": "none"
+    },
+    "org_id": {
+      "type": "string",
+      "x-pii": "identifier"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "End user, or API key owner",
+      "x-pii": "identifier"
+    },
+    "api_key_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Null for chat app traffic",
+      "x-pii": "identifier"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "app",
+        "api"
+      ],
+      "x-pii": "none"
+    },
+    "conversation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-pii": "none"
+    },
+    "message_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-pii": "none"
+    },
+    "model": {
+      "type": "string",
+      "enum": [
+        "tsumugi-mini",
+        "tsumugi-pro"
+      ],
+      "x-pii": "none"
+    },
+    "input_tokens": {
+      "type": "integer",
+      "x-pii": "none"
+    },
+    "output_tokens": {
+      "type": "integer",
+      "x-pii": "none"
+    },
+    "cached_tokens": {
+      "type": "integer",
+      "description": "Subset of input_tokens",
+      "x-pii": "none"
+    },
+    "latency_ms": {
+      "type": "integer",
+      "description": "Request start to last token",
+      "x-pii": "none"
+    },
+    "ttft_ms": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Time to first token; null on error",
+      "x-pii": "none"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "error",
+        "cancelled"
+      ],
+      "x-pii": "none"
+    },
+    "error_code": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "rate_limited",
+        "context_length_exceeded",
+        "internal_error",
+        "timeout",
+        null
+      ],
+      "x-pii": "none"
+    },
+    "finish_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "stop",
+        "length",
+        "content_filter",
+        null
+      ],
+      "x-pii": "none"
+    },
+    "zdr": {
+      "type": "boolean",
+      "description": "Org's ZDR setting at request time",
+      "x-pii": "none"
+    },
+    "prompt_text": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-pii": "free_text"
+    },
+    "response_text": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-pii": "free_text"
+    },
+    "schema_version": {
+      "type": "integer",
+      "x-pii": "none"
+    }
+  },
+  "required": [
+    "request_id",
+    "event_ts",
+    "received_ts",
+    "org_id",
+    "user_id",
+    "api_key_id",
+    "channel",
+    "conversation_id",
+    "message_id",
+    "model",
+    "input_tokens",
+    "output_tokens",
+    "cached_tokens",
+    "latency_ms",
+    "ttft_ms",
+    "status",
+    "error_code",
+    "finish_reason",
+    "zdr",
+    "prompt_text",
+    "response_text",
+    "schema_version"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,66 @@
+models:
+  - name: stg_app__events
+    description: >
+      Grain: one row per delivered app event, duplicates included (dedup happens in
+      int_app_events_deduped). Rename/cast only. event_date is the JST calendar date.
+    columns:
+      - name: event_id
+        data_tests: [not_null]
+      - name: event_name
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  [session_started, conversation_created, message_sent,
+                   feedback_submitted, org_changed]
+      - name: event_date
+        description: JST date of event_ts.
+      - name: org_id
+        description: HMAC-pseudonymized org ID (仮名加工情報).
+      - name: user_id
+        description: HMAC-pseudonymized user ID (仮名加工情報).
+      - name: properties
+        description: Event-specific fields as JSON, per tracking_plan/events.yaml.
+      - name: _loaded_at
+        description: Ingest load timestamp; drives incremental processing.
+
+  - name: stg_api__inference_requests
+    description: >
+      Grain: one row per delivered inference log record, duplicates included. Rename/cast
+      only. Contains no prompt or response text.
+    columns:
+      - name: request_id
+        data_tests: [not_null]
+      - name: model
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [tsumugi-mini, tsumugi-pro]
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [success, error, cancelled]
+      - name: channel
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [app, api]
+      - name: is_zdr
+        description: The org's Zero Data Retention setting at request time.
+        data_tests: [not_null]
+
+  - name: stg_pipeline__dbt_run_results
+    description: >
+      Grain: one row per delivered dbt node execution artifact row. Rename/cast only;
+      deduplication and INFORMATION_SCHEMA.JOBS join happen in fct_pipeline_runs.
+    columns:
+      - name: run_node_id
+        description: Composite key invocation_id:unique_id.
+        data_tests: [not_null]
+      - name: target_date
+        data_tests: [not_null]
+      - name: step
+        data_tests: [not_null]
+      - name: status
+        data_tests: [not_null]

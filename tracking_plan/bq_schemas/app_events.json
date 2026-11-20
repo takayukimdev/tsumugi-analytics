@@ -1,0 +1,71 @@
+[
+  {
+    "name": "event_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "UUIDv4; idempotency key"
+  },
+  {
+    "name": "event_name",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "object_action, snake_case"
+  },
+  {
+    "name": "event_ts",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "When it happened (client clock)"
+  },
+  {
+    "name": "received_ts",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "When the collector received it"
+  },
+  {
+    "name": "org_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Customer organization"
+  },
+  {
+    "name": "user_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Acting user"
+  },
+  {
+    "name": "session_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Null for server-side events"
+  },
+  {
+    "name": "platform",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "app_version",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "schema_version",
+    "type": "INTEGER",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "properties",
+    "type": "JSON",
+    "mode": "REQUIRED",
+    "description": "Event-specific payload validated against the per-event JSON Schema"
+  },
+  {
+    "name": "_loaded_at",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "UTC timestamp when the ingest job processed the batch"
+  }
+]

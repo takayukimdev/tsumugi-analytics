@@ -1,0 +1,22 @@
+[project]
+name = "tsumugi-orchestration"
+version = "0.1.0"
+description = "Composer 3 DAG for the Tsumugi pipeline. Tested offline; runs only on Cloud Composer."
+requires-python = ">=3.12,<3.13"
+# Pinned to the Composer image composer-3-airflow-3.3.1 and Airflow's constraints-3.3.1 file.
+# Kept separate from the root project: Airflow and dbt pin conflicting dependencies, and
+# Composer only launches Cloud Run Jobs, so it never needs dbt.
+dependencies = [
+    "apache-airflow==3.3.1",
+    "apache-airflow-providers-google==22.3.0",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.3"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]

@@ -1,0 +1,44 @@
+name: tsumugi
+version: "1.0.0"
+profile: tsumugi
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+clean-targets: ["target", "dbt_packages"]
+
+# Datasets: in prod each layer gets its own dataset (stg, int, marts); dev and CI targets
+# put everything in one dataset (see macros/generate_schema_name.sql).
+models:
+  tsumugi:
+    +persist_docs:
+      relation: true
+      columns: true
+    staging:
+      +materialized: view
+      +schema: stg
+    intermediate:
+      +materialized: view
+      +schema: int
+    marts:
+      +materialized: table
+      +schema: marts
+    semantic:
+      +materialized: table
+      +schema: marts
+    anon:
+      +materialized: table
+      +schema: anon
+
+seeds:
+  tsumugi:
+    +schema: stg
+    model_pricing:
+      +column_types:
+        model: string
+        valid_from: timestamp
+        valid_to: timestamp
+        input_usd_per_mtok: numeric
+        cached_input_usd_per_mtok: numeric
+        output_usd_per_mtok: numeric

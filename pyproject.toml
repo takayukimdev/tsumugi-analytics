@@ -1,0 +1,38 @@
+[project]
+name = "tsumugi-analytics"
+version = "0.1.0"
+description = "Analytics platform for Tsumugi, a fictional LLM chat product (portfolio project)."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "dbt-bigquery>=1.12.4",
+    "dbt-core>=1.12.7",
+    "google-cloud-bigquery>=3.40.0",
+    "google-cloud-dlp>=3.40.0",
+    "google-cloud-secret-manager>=2.32.0",
+    "google-cloud-storage>=3.10.0",
+    "jsonschema>=4.23",
+    "pyyaml>=6.0",
+]
+
+[dependency-groups]
+dev = [
+    "dbt-metricflow[dbt-bigquery]>=0.16.0",
+    "pytest>=8.3",
+    "ruff>=0.8",
+    "sqlfluff>=4.5.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]

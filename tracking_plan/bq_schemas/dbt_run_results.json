@@ -1,0 +1,98 @@
+[
+  {
+    "name": "target_date",
+    "type": "DATE",
+    "mode": "REQUIRED",
+    "description": "JST date processed by the pipeline run"
+  },
+  {
+    "name": "step",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "dbt subcommand executed (e.g. build, source_freshness)"
+  },
+  {
+    "name": "invocation_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "dbt invocation UUID"
+  },
+  {
+    "name": "unique_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "dbt node unique_id, or invocation.<step> on startup failure"
+  },
+  {
+    "name": "resource_type",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "model, test, seed, source, or invocation"
+  },
+  {
+    "name": "status",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Outcome: success, pass, error, fail, warn, skipped, or invocation_error"
+  },
+  {
+    "name": "execution_time_s",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Wall-clock node runtime in seconds"
+  },
+  {
+    "name": "failures",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Failing row count for tests"
+  },
+  {
+    "name": "job_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "BigQuery job_id from adapter_response for joining INFORMATION_SCHEMA.JOBS"
+  },
+  {
+    "name": "bytes_processed",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Bytes processed reported by the BigQuery adapter"
+  },
+  {
+    "name": "bytes_billed",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Bytes billed reported by the BigQuery adapter"
+  },
+  {
+    "name": "slot_ms",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Slot milliseconds reported by the BigQuery adapter"
+  },
+  {
+    "name": "max_loaded_at",
+    "type": "TIMESTAMP",
+    "mode": "NULLABLE",
+    "description": "Latest _loaded_at seen by source freshness"
+  },
+  {
+    "name": "age_s",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Source age in seconds at freshness check time"
+  },
+  {
+    "name": "executed_at",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "UTC timestamp when dbt generated the artifact"
+  },
+  {
+    "name": "_loaded_at",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "UTC timestamp when the dbt wrapper wrote the NDJSON artifact"
+  }
+]

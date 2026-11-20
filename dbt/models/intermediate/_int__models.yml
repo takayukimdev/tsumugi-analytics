@@ -1,0 +1,57 @@
+models:
+  - name: int_app_events_deduped
+    description: "Grain: one row per event_id (latest loaded copy)."
+    columns:
+      - name: event_id
+        data_tests: [unique, not_null]
+
+  - name: int_inference_requests_deduped
+    description: "Grain: one row per request_id (latest loaded copy)."
+    columns:
+      - name: request_id
+        data_tests: [unique, not_null]
+
+  - name: int_org_history
+    description: >
+      Grain: one row per org per state change (SCD2). valid_to is exclusive; null = current.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [org_id, valid_from]
+    columns:
+      - name: org_id
+        data_tests: [not_null]
+      - name: plan
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [free, pro, enterprise]
+      - name: valid_from
+        data_tests: [not_null]
+
+  - name: int_inference_requests_priced
+    description: >
+      Grain: one row per request_id. Adds cost_usd (effective-dated pricing) and org_plan
+      (the org's plan at request time).
+    columns:
+      - name: request_id
+        data_tests: [unique, not_null]
+      - name: cost_usd
+        description: USD; 0 for failed requests. Null would mean no matching price.
+        data_tests: [not_null]
+      - name: org_plan
+        description: Org plan at request time; null would mean no org history covers the request.
+        data_tests: [not_null]
+
+  - name: int_messages
+    description: "Grain: one row per message_id, with the latest feedback rating if any."
+    columns:
+      - name: message_id
+        data_tests: [unique, not_null]
+      - name: request_id
+        data_tests: [not_null]
+      - name: rating
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [up, down]

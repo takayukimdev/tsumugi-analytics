@@ -1,0 +1,45 @@
+models:
+  - name: anon_weekly_model_benchmarks
+    description: >
+      Grain: event_week (JST ISO week) x org_plan x model x channel, filtered to k >= 5
+      distinct users per cell. APPI Anonymously Processed Information (匿名加工情報): contains
+      no user_id, org_id, request_id, or free text (see docs/privacy.md).
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [event_week, org_plan, model, channel]
+    columns:
+      - name: event_week
+        data_type: date
+        description: Monday of the JST ISO week (generalized from event_date).
+        constraints: [{type: not_null}]
+      - name: org_plan
+        data_type: string
+        constraints: [{type: not_null}]
+      - name: model
+        data_type: string
+        constraints: [{type: not_null}]
+      - name: channel
+        data_type: string
+        constraints: [{type: not_null}]
+      - name: distinct_users
+        data_type: int64
+        description: Distinct pseudonymous users contributing to the cell; always >= 5.
+        constraints: [{type: not_null}]
+      - name: requests
+        data_type: int64
+        constraints: [{type: not_null}]
+      - name: error_requests
+        data_type: int64
+        constraints: [{type: not_null}]
+      - name: input_tokens
+        data_type: int64
+        constraints: [{type: not_null}]
+      - name: output_tokens
+        data_type: int64
+        constraints: [{type: not_null}]
+      - name: p95_latency_ms
+        data_type: int64
+        constraints: [{type: not_null}]

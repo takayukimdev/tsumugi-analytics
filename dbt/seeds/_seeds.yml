@@ -1,0 +1,17 @@
+seeds:
+  - name: model_pricing
+    description: >
+      Fictional list prices per million tokens, effective-dated. Grain: one row per model per
+      price period. valid_to is exclusive; null means the price is current. The tsumugi-mini
+      price cut on 2026-11-01 exercises the effective-dated join.
+    columns:
+      - name: model
+        data_tests: [not_null]
+      - name: valid_from
+        data_tests: [not_null]
+      - name: input_usd_per_mtok
+        description: USD per 1M uncached input tokens.
+      - name: cached_input_usd_per_mtok
+        description: USD per 1M cached input tokens.
+      - name: output_usd_per_mtok
+        description: USD per 1M output tokens.

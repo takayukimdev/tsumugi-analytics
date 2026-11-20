@@ -1,0 +1,287 @@
+# All marts enforce contracts: column names and types are checked at build time.
+# BigQuery enforces only not_null constraints, so uniqueness stays a data test.
+#
+# fct_inference_requests has require_partition_filter=true. Its tests add a constant
+# event_date filter, which satisfies the requirement while still covering the whole table.
+
+models:
+  - name: fct_inference_requests
+    description: >
+      Grain: one row per inference request (request_id), deduplicated. Incremental merge on
+      request_id, partitioned by event_date (JST), clustered by org_id, model.
+      Contains no prompt or response text.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: request_id
+        data_type: string
+        constraints: [{type: not_null}]
+        data_tests:
+          - unique:
+              config: {where: "event_date >= date('2000-01-01')"}
+      - name: event_ts
+        data_type: timestamp
+        description: Request start (UTC).
+      - name: event_date
+        data_type: date
+        description: JST date of event_ts; partition column.
+        constraints: [{type: not_null}]
+      - name: org_id
+        data_type: string
+        description: HMAC-pseudonymized org ID.
+        constraints: [{type: not_null}]
+      - name: user_id
+        data_type: string
+        description: HMAC-pseudonymized end user, or API key owner.
+        constraints: [{type: not_null}]
+      - name: api_key_id
+        data_type: string
+        description: HMAC-pseudonymized API key; null for chat app traffic.
+      - name: channel
+        data_type: string
+      - name: conversation_id
+        data_type: string
+      - name: message_id
+        data_type: string
+      - name: model
+        data_type: string
+      - name: org_plan
+        data_type: string
+        description: The org's plan at request time (SCD2 join).
+        data_tests:
+          - not_null:
+              config: {where: "event_date >= date('2000-01-01')"}
+      - name: input_tokens
+        data_type: int64
+      - name: output_tokens
+        data_type: int64
+      - name: cached_tokens
+        data_type: int64
+        description: Subset of input_tokens served from the prompt cache.
+      - name: latency_ms
+        data_type: int64
+      - name: ttft_ms
+        data_type: int64
+        description: Time to first token; null for failed requests.
+      - name: status
+        data_type: string
+      - name: error_code
+        data_type: string
+      - name: finish_reason
+        data_type: string
+      - name: is_zdr
+        data_type: bool
+        description: Org's ZDR setting at request time. ZDR requests never had text stored.
+      - name: cost_usd
+        data_type: numeric
+        description: USD from the effective-dated price list; 0 for failed requests.
+        data_tests:
+          - not_null:
+              config: {where: "event_date >= date('2000-01-01')"}
+      - name: _loaded_at
+        data_type: timestamp
+
+  - name: fct_messages
+    description: >
+      Grain: one row per user message (message_id) with its latest feedback rating.
+      Rebuilt in full each run because feedback can arrive after its message.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: message_id
+        data_type: string
+        constraints: [{type: not_null}]
+        data_tests: [unique]
+      - name: conversation_id
+        data_type: string
+      - name: request_id
+        data_type: string
+        description: The inference request this message triggered.
+        data_tests:
+          - settled_relationships:
+              arguments:
+                to: ref('int_inference_requests_deduped')
+                field: request_id
+      - name: session_id
+        data_type: string
+      - name: org_id
+        data_type: string
+      - name: user_id
+        data_type: string
+      - name: platform
+        data_type: string
+      - name: event_ts
+        data_type: timestamp
+      - name: event_date
+        data_type: date
+      - name: prompt_chars
+        data_type: int64
+      - name: has_attachment
+        data_type: bool
+      - name: rating
+        data_type: string
+        description: up / down, or null when the message was not rated.
+      - name: feedback_reason
+        data_type: string
+      - name: feedback_ts
+        data_type: timestamp
+
+  - name: dim_orgs
+    description: >
+      Grain: one row per org per state (SCD2). valid_to is exclusive; null = current state.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [org_id, valid_from]
+    columns:
+      - name: org_version_id
+        data_type: string
+        constraints: [{type: not_null}]
+        data_tests: [unique]
+      - name: org_id
+        data_type: string
+        constraints: [{type: not_null}]
+      - name: plan
+        data_type: string
+      - name: is_zdr
+        data_type: bool
+      - name: change_type
+        data_type: string
+      - name: valid_from
+        data_type: timestamp
+        constraints: [{type: not_null}]
+      - name: valid_to
+        data_type: timestamp
+      - name: is_current
+        data_type: bool
+
+  - name: dim_users
+    description: "Grain: one row per pseudonymous user."
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: user_id
+        data_type: string
+        constraints: [{type: not_null}]
+        data_tests: [unique]
+      - name: org_id
+        data_type: string
+      - name: latest_platform
+        data_type: string
+        description: Null for API-only users.
+      - name: first_seen_at
+        data_type: timestamp
+      - name: first_inference_date
+        data_type: date
+
+  - name: fct_user_retention
+    description: >
+      Grain: one row per user (their cohort). See the model SQL for eligibility rules.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: user_id
+        data_type: string
+        constraints: [{type: not_null}]
+        data_tests: [unique]
+      - name: cohort_date
+        data_type: date
+        description: The user's first inference date (JST).
+      - name: is_d7_eligible
+        data_type: bool
+      - name: is_retained_d7
+        data_type: bool
+
+  - name: agg_daily_usage
+    description: >
+      Grain: event_date x org_plan x model x channel. For dashboards only; distinct counts
+      are not additive across rows.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [event_date, org_plan, model, channel]
+    columns:
+      - name: event_date
+        data_type: date
+      - name: org_plan
+        data_type: string
+      - name: model
+        data_type: string
+      - name: channel
+        data_type: string
+      - name: requests
+        data_type: int64
+      - name: error_requests
+        data_type: int64
+      - name: input_tokens
+        data_type: int64
+      - name: output_tokens
+        data_type: int64
+      - name: cached_tokens
+        data_type: int64
+      - name: cost_usd
+        data_type: numeric
+      - name: active_users
+        data_type: int64
+      - name: active_orgs
+        data_type: int64
+      - name: p95_latency_ms
+        data_type: int64
+
+  - name: fct_pipeline_runs
+    description: >
+      Grain: one row per dbt node execution per invocation (run_node_id = invocation_id:unique_id),
+      joined to region-asia-northeast1.INFORMATION_SCHEMA.JOBS for authoritative bytes billed,
+      slot milliseconds, error reason, and estimated on-demand USD cost.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: run_node_id
+        data_type: string
+        constraints: [{type: not_null}]
+        data_tests: [unique]
+      - name: target_date
+        data_type: date
+        constraints: [{type: not_null}]
+      - name: step
+        data_type: string
+        constraints: [{type: not_null}]
+      - name: invocation_id
+        data_type: string
+        constraints: [{type: not_null}]
+      - name: unique_id
+        data_type: string
+        constraints: [{type: not_null}]
+      - name: resource_type
+        data_type: string
+        constraints: [{type: not_null}]
+      - name: status
+        data_type: string
+        constraints: [{type: not_null}]
+      - name: execution_time_s
+        data_type: float64
+      - name: failures
+        data_type: int64
+      - name: job_id
+        data_type: string
+      - name: total_bytes_billed
+        data_type: int64
+        constraints: [{type: not_null}]
+      - name: total_slot_ms
+        data_type: int64
+        constraints: [{type: not_null}]
+      - name: bq_error_reason
+        data_type: string
+      - name: estimated_cost_usd
+        data_type: numeric
+        constraints: [{type: not_null}]
+      - name: executed_at
+        data_type: timestamp
+        constraints: [{type: not_null}]
+      - name: _loaded_at
+        data_type: timestamp
+        constraints: [{type: not_null}]

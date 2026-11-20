@@ -1,0 +1,30 @@
+# Version control and local secrets
+.git/
+.github/
+.env
+*.pem
+*credentials*.json
+*service-account*.json
+*-sa-key*.json
+dbt/profiles.yml
+
+# Virtualenvs, caches, and generated artifacts
+.venv/
+orchestration/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+data/
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+
+# Non-runtime directories
+ci/
+docs/
+infra/
+tests/
+README.md
+AGENTS.md
+CLAUDE.md

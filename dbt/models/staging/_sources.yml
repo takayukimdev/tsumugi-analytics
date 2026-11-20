@@ -1,0 +1,44 @@
+sources:
+  - name: app
+    description: Product events from the Tsumugi chat app, loaded by the ingest Cloud Run Job.
+    database: "{{ env_var('GCP_PROJECT_ID', 'ci-dummy-project') }}"
+    schema: raw
+    config:
+      loaded_at_field: _loaded_at
+      freshness:
+        warn_after: {count: 26, period: hour}
+        error_after: {count: 50, period: hour}
+        # raw tables are partitioned by _loaded_at; keep freshness checks pruned.
+        filter: "_loaded_at >= timestamp_sub(current_timestamp(), interval 3 day)"
+    tables:
+      - name: events
+        identifier: app_events
+        description: >
+          One row per delivered app event (duplicates and late arrivals possible). Identifiers
+          are HMAC-pseudonymized at ingest; event-specific fields are in `properties` (JSON).
+
+  - name: api
+    description: Inference logs from the chat app and developer API (metadata only, no text).
+    database: "{{ env_var('GCP_PROJECT_ID', 'ci-dummy-project') }}"
+    schema: raw
+    config:
+      loaded_at_field: _loaded_at
+      freshness:
+        warn_after: {count: 26, period: hour}
+        error_after: {count: 50, period: hour}
+        filter: "_loaded_at >= timestamp_sub(current_timestamp(), interval 3 day)"
+    tables:
+      - name: inference_requests
+        description: >
+          One row per delivered inference log record. Prompt and response text are not here:
+          redacted non-ZDR text lives in raw.raw_content, which dbt deliberately does not read.
+
+  - name: pipeline
+    description: Flattened dbt run and source freshness artifacts loaded by Composer.
+    database: "{{ env_var('GCP_PROJECT_ID', 'ci-dummy-project') }}"
+    schema: raw
+    tables:
+      - name: dbt_run_results
+        description: >
+          One row per dbt node execution per step, written by runner.dbt_wrapper and loaded
+          into raw.dbt_run_results$YYYYMMDD by the Composer load_run_stats task.
