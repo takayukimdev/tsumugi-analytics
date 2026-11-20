@@ -1,8 +1,10 @@
-# How I used Claude Code
+# How I used AI coding agents
 
-This project was built with Claude Code as a pair programmer. I set the direction and made
-the decisions. Claude drafted code, tests, and docs inside guardrails written in
-[`AGENTS.md`](../AGENTS.md): privacy rules, cost limits, and "never run `terraform apply`".
+This project was built with two AI coding agents as pair programmers: Claude Code and Google
+Antigravity. I set the direction and made the decisions. The agents drafted code, tests, and
+docs inside guardrails written in [`AGENTS.md`](../AGENTS.md): privacy rules, cost limits, and
+"never run `terraform apply`". Both agents read the same file (Claude Code through
+`CLAUDE.md`), so the rules did not depend on which agent was working.
 
 ## Process
 
